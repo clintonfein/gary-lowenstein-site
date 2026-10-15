@@ -1,0 +1,197 @@
+---
+import '../styles/site.css';
+import { getHomePage, urlFor } from '../lib/sanity.js';
+
+const d = (await getHomePage()) ?? {};
+const ticker = [...(d.tickerWords ?? []), ...(d.tickerWords ?? [])];
+const portrait = d.heroPortrait?.asset ? d.heroPortrait : null;
+const hotspot = portrait?.hotspot;
+const objectPosition = hotspot ? `${hotspot.x * 100}% ${hotspot.y * 100}%` : 'center 34%';
+const ig = d.instagramUrl ?? 'https://www.instagram.com/garylowie/';
+const wa = d.whatsappNumber ?? '27832826959';
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#151611" />
+  <title>{d.seoTitle}</title>
+  <meta name="description" content={d.seoDescription} />
+  <meta property="og:title" content={d.seoTitle} />
+  <meta property="og:description" content={d.seoDescription} />
+  {portrait && <meta property="og:image" content={urlFor(portrait).width(1200).height(630).fit('crop').url()} />}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="topline"></div>
+  <nav class="nav" aria-label="Primary navigation">
+    <a class="brand" href="#top">{d.brandName} <span>{d.brandSuffix}</span></a>
+    <div class="navlinks">
+      <a href="#approach">Approach</a><a href="#expertise">Expertise</a><a href="#insights">Insights</a><a href="#peptides">Peptides</a>
+      <a class="pill" href="#contact">{d.navCtaLabel}</a>
+    </div>
+  </nav>
+
+  <main id="top">
+    <header class="hero">
+      <div>
+        <div class="eyebrow">{d.heroEyebrow}</div>
+        <h1>{d.heroHeadline} <em>{d.heroHeadlineAccent}</em></h1>
+        <p class="hero-copy">{d.heroIntro}</p>
+        <div class="actions">
+          <a class="pill" href="#contact">{d.heroPrimaryCta}</a>
+          <a class="pill light" href="#insights">{d.heroSecondaryCta}</a>
+        </div>
+        <p class="micro">{d.heroMicro}</p>
+      </div>
+      <div class="portrait">
+        {portrait && (
+          <img
+            src={urlFor(portrait).width(900).auto('format').url()}
+            srcset={[600, 900, 1200].map((w) => `${urlFor(portrait).width(w).auto('format').url()} ${w}w`).join(', ')}
+            sizes="(max-width: 880px) 100vw, 40vw"
+            alt={portrait.alt ?? ''}
+            style={`object-position:${objectPosition}`}
+          />
+        )}
+        <div class="badge">{d.heroBadge}</div>
+      </div>
+    </header>
+
+    <div class="ticker" aria-hidden="true"><div>
+      {ticker.map((w) => <Fragment>{w} <i>✦</i> </Fragment>)}
+    </div></div>
+
+    <section id="approach" class="dark">
+      <div class="wrap">
+        <div class="section-head"><div><div class="number">{d.approachNumber}</div><h2>{d.approachHeading}</h2></div><p>{d.approachIntro}</p></div>
+        <div class="principles">
+          {d.principles?.map((p) => <article class="principle"><b>{p.title}</b><p>{p.text}</p></article>)}
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head"><div><div class="number">{d.whyNumber}</div><h2>{d.whyHeading}</h2></div><p>{d.whyIntro}</p></div>
+        <div class="proof">
+          {d.stats?.map((s) => (
+            <article class:list={['proof-card', { accent: s.accent }]}>
+              <div class="big">{s.value}</div>
+              <div><h3>{s.title}</h3><p>{s.text}</p></div>
+              <span class="stamp">{s.stamp}</span>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section id="expertise">
+      <div class="wrap">
+        <div class="section-head"><div><div class="number">{d.workNumber}</div><h2>{d.workHeading}</h2></div><p>{d.workIntro}</p></div>
+        <div class="focus-grid">
+          {d.services?.map((s) => (
+            <article class="focus"><div class="icon">{s.icon}</div><div><h3>{s.title}</h3><p>{s.text}</p></div><small>{s.label}</small></article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section id="insights" class="dark">
+      <div class="wrap">
+        <div class="section-head"><div><div class="number">{d.insightsNumber}</div><h2>{d.insightsHeading}</h2></div><p>{d.insightsIntro}</p></div>
+        <div class="content-row">
+          <article class="feature">
+            <div class="play">▶</div>
+            <div>
+              <h3>{d.featureTitle}</h3><p>{d.featureText}</p>
+              {d.featureLinkUrl && <a class="social-link" href={d.featureLinkUrl} target="_blank" rel="noopener">{d.featureLinkLabel}</a>}
+            </div>
+          </article>
+          <div class="stack">
+            {d.themes?.map((t) => <article class="mini"><small>{t.label}</small><h4>{t.title}</h4></article>)}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="peptides" class="peptides">
+      <div class="wrap">
+        <div class="section-head"><div><div class="number">{d.peptidesNumber}</div><h2>{d.peptidesHeading}</h2></div><p>{d.peptidesIntro}</p></div>
+        <div class="stack-definition">
+          <h3>{d.stackHeading}</h3>
+          <div><p>{d.stackText}</p><div class="system-list">{d.systems?.map((s) => <span>{s}</span>)}</div></div>
+        </div>
+        <div class="peptide-grid">
+          {d.peptideCategories?.map((c) => (
+            <article class="peptide-card">
+              <span class="peptide-kicker">{c.kicker}</span>
+              <h3>{c.title}</h3>
+              <p class="focusline">{c.focusline}</p>
+              <div class="compound-list">{c.compounds?.map((x) => <span>{x}</span>)}</div>
+              <p class="use"><strong>Often discussed in relation to:</strong> {c.use}</p>
+            </article>
+          ))}
+        </div>
+        <div class="protocol-note">
+          <strong>{d.noteHeading}</strong>
+          <div><p>{d.noteText}</p><p class="disclaimer">{d.disclaimer}</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="quote">
+      <blockquote>{d.quoteText}</blockquote>
+      <p>{d.quoteAttribution}</p>
+    </section>
+
+    <section id="contact">
+      <div class="wrap contact">
+        <div>
+          <div class="number">{d.contactNumber}</div>
+          <h2>{d.contactHeading}</h2>
+          <p class="contact-copy">{d.contactIntro}</p>
+          <div class="direct">
+            <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener">{d.whatsappLabel}</a>
+            <a href={ig} target="_blank" rel="noopener">Instagram {d.instagramHandle} ↗</a>
+          </div>
+        </div>
+        <form class="form" id="enquiryForm" data-wa={wa}>
+          <div class="field"><label for="name">Your name</label><input id="name" name="name" required autocomplete="name" placeholder="Name" /></div>
+          <div class="field"><label for="age">Age range</label><select id="age" name="age">{d.ageOptions?.map((o) => <option>{o}</option>)}</select></div>
+          <div class="field"><label for="interest">What are you most interested in?</label><select id="interest" name="interest">{d.interestOptions?.map((o) => <option>{o}</option>)}</select></div>
+          <div class="field"><label for="message">What would you like to change?</label><textarea id="message" name="message" placeholder="A few lines is enough."></textarea></div>
+          <button class="pill acid" type="submit">{d.formButtonLabel}</button>
+          <p class="note">{d.formNote}</p>
+          <p class="success" id="success">{d.formSuccess}</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="foot">
+      <strong>{d.brandName} {d.brandSuffix}</strong>
+      <span>{d.footerTagline}</span>
+      <a href={ig} target="_blank" rel="noopener">{d.instagramHandle} ↗</a>
+    </div>
+  </footer>
+
+  <script>
+    const form = document.getElementById('enquiryForm') as HTMLFormElement;
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const f = new FormData(form);
+      const text =
+        'Hi Gary, I found your website. My name is ' + f.get('name') +
+        '. I am in the ' + f.get('age') + ' age range. I am interested in ' + f.get('interest') + '. ' +
+        (f.get('message') || 'I would like to start a conversation.');
+      document.getElementById('success')!.style.display = 'block';
+      window.open('https://wa.me/' + form.dataset.wa + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+    });
+  </script>
+</body>
+</html>

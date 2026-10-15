@@ -1,0 +1,27 @@
+{
+  "name": "gary-lowenstein-site",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clintonfein/gary-lowenstein-site.git"
+  },
+  "bugs": {
+    "url": "https://github.com/clintonfein/gary-lowenstein-site/issues"
+  },
+  "homepage": "https://github.com/clintonfein/gary-lowenstein-site#readme",
+  "dependencies": {
+    "@sanity/client": "^8.9.0",
+    "@sanity/image-url": "^2.1.1",
+    "astro": "^7.4.0"
+  },
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  }
+}
