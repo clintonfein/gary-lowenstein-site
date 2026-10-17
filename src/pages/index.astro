@@ -1,8 +1,11 @@
 ---
-import '../styles/site.css';
-import { getHomePage, urlFor } from '../lib/sanity.js';
+import Base from '../layouts/Base.astro';
+import InstagramReels from '../components/InstagramReels.astro';
+import { getHomePage, getWatchPage, urlFor } from '../lib/sanity.js';
 
 const d = (await getHomePage()) ?? {};
+const w = (await getWatchPage()) ?? {};
+const showReels = Boolean(d.beholdFeedId && d.reelsEnabled !== false);
 const ticker = [...(d.tickerWords ?? []), ...(d.tickerWords ?? [])];
 const portrait = d.heroPortrait?.asset ? d.heroPortrait : null;
 const hotspot = portrait?.hotspot;
@@ -10,31 +13,14 @@ const objectPosition = hotspot ? `${hotspot.x * 100}% ${hotspot.y * 100}%` : 'ce
 const ig = d.instagramUrl ?? 'https://www.instagram.com/garylowie/';
 const wa = d.whatsappNumber ?? '27832826959';
 ---
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#151611" />
-  <title>{d.seoTitle}</title>
-  <meta name="description" content={d.seoDescription} />
-  <meta property="og:title" content={d.seoTitle} />
-  <meta property="og:description" content={d.seoDescription} />
-  {portrait && <meta property="og:image" content={urlFor(portrait).width(1200).height(630).fit('crop').url()} />}
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
-</head>
-<body>
-  <div class="topline"></div>
-  <nav class="nav" aria-label="Primary navigation">
-    <a class="brand" href="#top">{d.brandName} <span>{d.brandSuffix}</span></a>
-    <div class="navlinks">
-      <a href="#approach">Approach</a><a href="#expertise">Expertise</a><a href="#insights">Insights</a><a href="#peptides">Peptides</a>
-      <a class="pill" href="#contact">{d.navCtaLabel}</a>
-    </div>
-  </nav>
-
+<Base
+  site={d}
+  title={d.seoTitle}
+  description={d.seoDescription}
+  ogImage={portrait ? urlFor(portrait).width(1200).height(630).fit('crop').url() : undefined}
+  watchLabel={w.navLabel}
+  current="home"
+>
   <main id="top">
     <header class="hero">
       <div>
@@ -118,6 +104,18 @@ const wa = d.whatsappNumber ?? '27832826959';
       </div>
     </section>
 
+    {showReels && (
+      <section id="reels" class="reels">
+        <div class="wrap">
+          <div class="reels-head">
+            <div><div class="number">{d.reelsLabel}</div><h2>{d.reelsHeading}</h2></div>
+            <a class="pill light" href="/watch/">{d.reelsLinkLabel}</a>
+          </div>
+          <InstagramReels feedId={d.beholdFeedId} count={d.reelsCount ?? 3} instagramUrl={ig} />
+        </div>
+      </section>
+    )}
+
     <section id="peptides" class="peptides">
       <div class="wrap">
         <div class="section-head"><div><div class="number">{d.peptidesNumber}</div><h2>{d.peptidesHeading}</h2></div><p>{d.peptidesIntro}</p></div>
@@ -172,14 +170,6 @@ const wa = d.whatsappNumber ?? '27832826959';
     </section>
   </main>
 
-  <footer>
-    <div class="foot">
-      <strong>{d.brandName} {d.brandSuffix}</strong>
-      <span>{d.footerTagline}</span>
-      <a href={ig} target="_blank" rel="noopener">{d.instagramHandle} ↗</a>
-    </div>
-  </footer>
-
   <script>
     const form = document.getElementById('enquiryForm') as HTMLFormElement;
     form.addEventListener('submit', (e) => {
@@ -193,5 +183,4 @@ const wa = d.whatsappNumber ?? '27832826959';
       window.open('https://wa.me/' + form.dataset.wa + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
     });
   </script>
-</body>
-</html>
+</Base>

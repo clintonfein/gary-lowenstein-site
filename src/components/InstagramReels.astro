@@ -1,0 +1,84 @@
+---
+// Latest reels from Gary's Instagram, via the Behold JSON feed.
+// Loaded in the browser so the reels stay current without a rebuild.
+interface Props {
+  feedId: string;
+  count?: number;
+  instagramUrl: string;
+}
+const { feedId, count = 3, instagramUrl } = Astro.props;
+---
+<div class="reels-grid" data-behold-reels data-feed={feedId} data-count={count} data-ig={instagramUrl}>
+  {Array.from({ length: count }).map(() => <div class="reel reel-skeleton" aria-hidden="true"></div>)}
+</div>
+<noscript><p><a class="social-link" href={instagramUrl}>Watch on Instagram ↗</a></p></noscript>
+
+<script>
+  type Size = { mediaUrl: string };
+  type Post = {
+    id: string;
+    permalink: string;
+    mediaType: 'IMAGE' | 'VIDEO' | 'CAROUSEL_ALBUM';
+    isReel?: boolean;
+    mediaUrl: string;
+    thumbnailUrl?: string;
+    prunedCaption?: string;
+    caption?: string;
+    sizes?: { small?: Size; medium?: Size; large?: Size };
+  };
+
+  const esc = (s = '') =>
+    s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+
+  function card(p: Post) {
+    const poster = p.sizes?.medium?.mediaUrl || p.thumbnailUrl || p.sizes?.large?.mediaUrl || p.mediaUrl;
+    const isVideo = p.mediaType === 'VIDEO';
+    const caption = (p.prunedCaption || p.caption || '').trim();
+    const el = document.createElement('article');
+    el.className = 'reel';
+    el.innerHTML = `
+      <img src="${esc(poster)}" alt="${esc(caption.slice(0, 120) || 'Instagram post by Gary Lowenstein')}" loading="lazy" />
+      ${isVideo ? '<button class="reel-play" type="button" aria-label="Play reel">▶</button>' : ''}
+      <div class="reel-meta">
+        ${caption ? `<p>${esc(caption)}</p>` : ''}
+        <a href="${esc(p.permalink)}" target="_blank" rel="noopener">View on Instagram ↗</a>
+      </div>`;
+    const btn = el.querySelector<HTMLButtonElement>('.reel-play');
+    btn?.addEventListener('click', () => {
+      const v = document.createElement('video');
+      v.src = p.mediaUrl;
+      v.poster = poster;
+      v.controls = true;
+      v.playsInline = true;
+      v.autoplay = true;
+      // If Instagram's video link has expired or is blocked, open the reel on Instagram instead.
+      v.addEventListener('error', () => window.open(p.permalink, '_blank', 'noopener'));
+      el.querySelector('img')?.replaceWith(v);
+      btn.remove();
+      el.classList.add('playing');
+    });
+    return el;
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-behold-reels]').forEach(async (grid) => {
+    const { feed, ig } = grid.dataset;
+    const count = Number(grid.dataset.count) || 3;
+    try {
+      const res = await fetch(`https://feeds.behold.so/${feed}`);
+      if (!res.ok) throw new Error(String(res.status));
+      const data = await res.json();
+      const posts: Post[] = data.posts ?? [];
+      // Reels first, then other videos, then anything else to fill the row.
+      const ranked = [
+        ...posts.filter((p) => p.mediaType === 'VIDEO' && p.isReel),
+        ...posts.filter((p) => p.mediaType === 'VIDEO' && !p.isReel),
+        ...posts.filter((p) => p.mediaType !== 'VIDEO'),
+      ].slice(0, count);
+      if (!ranked.length) throw new Error('empty feed');
+      grid.replaceChildren(...ranked.map(card));
+    } catch {
+      grid.innerHTML = `<a class="reel reel-fallback" href="${esc(ig)}" target="_blank" rel="noopener">
+        <span>Watch the latest on Instagram ↗</span></a>`;
+    }
+  });
+</script>

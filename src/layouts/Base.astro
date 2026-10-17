@@ -1,0 +1,56 @@
+---
+import '../styles/site.css';
+
+interface Props {
+  site: Record<string, any>;
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  watchLabel?: string;
+  current?: 'home' | 'watch';
+}
+
+const { site = {}, title, description, ogImage, watchLabel = 'Watch', current = 'home' } = Astro.props;
+const ig = site.instagramUrl ?? 'https://www.instagram.com/garylowie/';
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#151611" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  {ogImage && <meta property="og:image" content={ogImage} />}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <slot name="head" />
+</head>
+<body>
+  <div class="topline"></div>
+  <nav class="nav" aria-label="Primary navigation">
+    <a class="brand" href="/">{site.brandName} <span>{site.brandSuffix}</span></a>
+    <div class="navlinks">
+      <a href="/#approach">Approach</a><a href="/#expertise">Expertise</a><a href="/#insights">Insights</a><a href="/#peptides">Peptides</a>
+      <a href="/watch/" aria-current={current === 'watch' ? 'page' : undefined}>{watchLabel}</a>
+      <a class="pill" href="/#contact">{site.navCtaLabel}</a>
+    </div>
+  </nav>
+
+  <slot />
+
+  <footer>
+    <div class="foot">
+      <strong>{site.brandName} {site.brandSuffix}</strong>
+      <span>{site.footerTagline}</span>
+      <span class="foot-links">
+        <a href="/watch/">Watch &amp; Follow</a>
+        <a href={ig} target="_blank" rel="noopener">{site.instagramHandle} ↗</a>
+      </span>
+    </div>
+  </footer>
+</body>
+</html>

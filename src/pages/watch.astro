@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+import { getHomePage, getWatchPage, urlFor } from '../lib/sanity.js';
+
+const site = (await getHomePage()) ?? {};
+const w = (await getWatchPage()) ?? {};
+const ig = site.instagramUrl ?? 'https://www.instagram.com/garylowie/';
+const feedId = site.beholdFeedId;
+const portrait = site.heroPortrait?.asset ? site.heroPortrait : null;
+---
+<Base
+  site={site}
+  title={w.seoTitle}
+  description={w.seoDescription}
+  ogImage={portrait ? urlFor(portrait).width(1200).height(630).fit('crop').url() : undefined}
+  watchLabel={w.navLabel}
+  current="watch"
+>
+  <main id="top">
+    <header class="page-hero">
+      <div class="eyebrow">{w.eyebrow}</div>
+      <h1>{w.heading} <em>{w.headingAccent}</em></h1>
+      <div class="page-hero-row">
+        <p class="hero-copy">{w.intro}</p>
+        <a class="pill acid" href={ig} target="_blank" rel="noopener">{w.followLabel}</a>
+      </div>
+    </header>
+
+    {w.topics?.length > 0 && (
+      <section class="topics-band">
+        <div class="wrap focus-grid">
+          {w.topics.map((t) => (
+            <article class="focus"><div><h3>{t.title}</h3><p>{t.text}</p></div><small>{t.label}</small></article>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section id="feed" class="feed dark">
+      <div class="wrap">
+        <div class="reels-head">
+          <div><div class="number">{w.feedLabel}</div><h2>{w.feedHeading}</h2></div>
+          <a class="social-link" href={ig} target="_blank" rel="noopener">{site.instagramHandle} ↗</a>
+        </div>
+        {feedId ? (
+          <div class="feed-frame">
+            <behold-widget feed-id={feedId}></behold-widget>
+          </div>
+        ) : (
+          <a class="feed-placeholder" href={ig} target="_blank" rel="noopener">
+            <span>The live feed is on its way.</span>
+            <strong>Follow {site.instagramHandle} on Instagram ↗</strong>
+          </a>
+        )}
+      </div>
+    </section>
+
+    <section class="quote watch-cta">
+      <blockquote>{w.ctaHeading}</blockquote>
+      <p>{w.ctaText}</p>
+      <a class="pill" href="/#contact">{w.ctaButtonLabel}</a>
+    </section>
+  </main>
+
+  {feedId && (
+    <script is:inline type="module" src="https://w.behold.so/widget.js"></script>
+  )}
+</Base>
