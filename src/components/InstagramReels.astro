@@ -1,14 +1,24 @@
 ---
-// Latest reels from Gary's Instagram, via the Behold JSON feed.
-// Loaded in the browser so the reels stay current without a rebuild.
+// Gary's Instagram posts, via the Behold JSON feed.
+// Loaded in the browser so the posts stay current without a rebuild.
+//  - variant "reels": tall cards, videos first (home page)
+//  - variant "grid": square tiles, newest first (Watch & Follow page)
 interface Props {
   feedId: string;
   count?: number;
   instagramUrl: string;
+  variant?: 'reels' | 'grid';
 }
-const { feedId, count = 3, instagramUrl } = Astro.props;
+const { feedId, count = 3, instagramUrl, variant = 'reels' } = Astro.props;
 ---
-<div class="reels-grid" data-behold-reels data-feed={feedId} data-count={count} data-ig={instagramUrl}>
+<div
+  class:list={['reels-grid', { 'feed-grid': variant === 'grid' }]}
+  data-behold-reels
+  data-feed={feedId}
+  data-count={count}
+  data-ig={instagramUrl}
+  data-order={variant === 'grid' ? 'latest' : 'videos-first'}
+>
   {Array.from({ length: count }).map(() => <div class="reel reel-skeleton" aria-hidden="true"></div>)}
 </div>
 <noscript><p><a class="social-link" href={instagramUrl}>Watch on Instagram ↗</a></p></noscript>
@@ -68,12 +78,17 @@ const { feedId, count = 3, instagramUrl } = Astro.props;
       if (!res.ok) throw new Error(String(res.status));
       const data = await res.json();
       const posts: Post[] = data.posts ?? [];
-      // Reels first, then other videos, then anything else to fill the row.
-      const ranked = [
-        ...posts.filter((p) => p.mediaType === 'VIDEO' && p.isReel),
-        ...posts.filter((p) => p.mediaType === 'VIDEO' && !p.isReel),
-        ...posts.filter((p) => p.mediaType !== 'VIDEO'),
-      ].slice(0, count);
+      // Home: reels first, then other videos, then anything else to fill the row.
+      // Watch page: newest first.
+      const ranked = (
+        grid.dataset.order === 'latest'
+          ? posts
+          : [
+              ...posts.filter((p) => p.mediaType === 'VIDEO' && p.isReel),
+              ...posts.filter((p) => p.mediaType === 'VIDEO' && !p.isReel),
+              ...posts.filter((p) => p.mediaType !== 'VIDEO'),
+            ]
+      ).slice(0, count);
       if (!ranked.length) throw new Error('empty feed');
       grid.replaceChildren(...ranked.map(card));
     } catch {
